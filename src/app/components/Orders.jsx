@@ -1,16 +1,15 @@
-// components/Orders.js
 import React from 'react';
+import { getFirestore, doc, updateDoc } from "firebase/firestore";
+import { firebaseApp } from "../firebase_connected/firebase"; // Ensure you have firebase configured
 
-const orders = [
-  { id: '1', customer: 'John Doe', food: 'Pizza', quantity: 2, status: 'Pending' },
-  { id: '2', customer: 'Jane Smith', food: 'Burger', quantity: 1, status: 'Delivered' },
-  { id: '3', customer: 'Michael Johnson', food: 'Pasta', quantity: 3, status: 'Preparing' },
-];
+export default function Orders({ orders }) {
+  const db = getFirestore(firebaseApp);
 
-export default function Orders() {
-  const handleConfirm = (id) => {
-    // Add your confirm logic here
-    console.log(`Order ${id} confirmed`);
+  const handleConfirm = async (id) => {
+    const orderRef = doc(db, "orders", id);
+    await updateDoc(orderRef, {
+      status: "Confirmed"
+    });
   };
 
   return (
@@ -31,8 +30,8 @@ export default function Orders() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
-                <td className="px-4 py-2 border">{order.id}</td>
-                <td className="px-4 py-2 border">{order.customer}</td>
+                <td className="px-4 py-2 border">{order.order_id}</td>
+                <td className="px-4 py-2 border">{order.customerName}</td>
                 <td className="px-4 py-2 border">{order.food}</td>
                 <td className="px-4 py-2 border">{order.quantity}</td>
                 <td className="px-4 py-2 border">
@@ -67,6 +66,8 @@ function getStatusClass(status) {
       return 'bg-green-200 text-green-800';
     case 'Preparing':
       return 'bg-blue-200 text-blue-800';
+    case 'Confirmed':
+      return 'bg-purple-200 text-purple-800';
     default:
       return 'bg-gray-200 text-gray-800';
   }
