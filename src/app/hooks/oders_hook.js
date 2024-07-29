@@ -26,11 +26,20 @@ export default function useOrders() {
     return () => unsubscribe();
   }, []);
 
+  const handleConfirm = async (id) => { 
+    const orderRef = doc(db, "orders", id);
+    await updateDoc(orderRef, {
+      status: "Confirmed"
+    });
+    setNewOrdersCount(newOrdersCount - 1);
+  }
+
   const resetNewOrdersCount = () => setNewOrdersCount(0);
 
   return {
     orders,
     newOrdersCount,
     resetNewOrdersCount,
+    handleConfirm
   };
 }
