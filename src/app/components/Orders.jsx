@@ -1,16 +1,26 @@
 import React from 'react';
 import { getFirestore, doc, updateDoc } from "firebase/firestore";
 import { firebaseApp } from "../firebase_connected/firebase"; // Ensure you have firebase configured
+import useOrders from "../hooks/oders_hook"; // Ensure you have the custom hook
 
-export default function Orders({ orders }) {
+export default function Orders() {
+  const { orders, handleConfirm } = useOrders();
   const db = getFirestore(firebaseApp);
 
-  const handleConfirm = async (id) => {
-    const orderRef = doc(db, "orders", id);
-    await updateDoc(orderRef, {
-      status: "Confirmed"
-    });
-  };
+  function getStatusClass(status) {
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-200 text-yellow-800';
+      case 'Delivered':
+        return 'bg-green-200 text-green-800';
+      case 'Preparing':
+        return 'bg-blue-200 text-blue-800';
+      case 'Confirmed':
+        return 'bg-purple-200 text-purple-800';
+      default:
+        return 'bg-gray-200 text-gray-800';
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
@@ -23,6 +33,7 @@ export default function Orders({ orders }) {
               <th className="px-4 py-2 border">Customer</th>
               <th className="px-4 py-2 border">Food Item</th>
               <th className="px-4 py-2 border">Quantity</th>
+              <th className="px-4 py-2 border">Total Price (LKR)</th>
               <th className="px-4 py-2 border">Status</th>
               <th className="px-4 py-2 border">Actions</th>
             </tr>
@@ -34,6 +45,7 @@ export default function Orders({ orders }) {
                 <td className="px-4 py-2 border">{order.customerName}</td>
                 <td className="px-4 py-2 border">{order.food}</td>
                 <td className="px-4 py-2 border">{order.quantity}</td>
+                <td className='px-4 py-2 border'>{order.totalPrice}</td>
                 <td className="px-4 py-2 border">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(order.status)}`}>
                     {order.status}
@@ -56,19 +68,4 @@ export default function Orders({ orders }) {
       </div>
     </div>
   );
-}
-
-function getStatusClass(status) {
-  switch (status) {
-    case 'Pending':
-      return 'bg-yellow-200 text-yellow-800';
-    case 'Delivered':
-      return 'bg-green-200 text-green-800';
-    case 'Preparing':
-      return 'bg-blue-200 text-blue-800';
-    case 'Confirmed':
-      return 'bg-purple-200 text-purple-800';
-    default:
-      return 'bg-gray-200 text-gray-800';
-  }
 }
