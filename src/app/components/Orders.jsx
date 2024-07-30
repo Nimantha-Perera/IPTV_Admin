@@ -1,19 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { getFirestore } from "firebase/firestore";
 import { firebaseApp } from "../firebase_connected/firebase"; // Ensure you have firebase configured
 import useOrders from "../hooks/oders_hook"; // Ensure you have the custom hook
-// import { FaTrash, FaTimes, FaKitchenSet, FaCheckCircle } from 'react-icons/fa'; // Import Font Awesome icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash,
-  faTimes,
-  faKitchenSet,
-  faUtensils,
-  faClock,
   faTimesCircle,
-  
+  faUtensils,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import ConfirmationModal from "../ConformationModal/ConfirmationModal"; // Import the modal component
 
 export default function Orders() {
   const {
@@ -24,6 +20,11 @@ export default function Orders() {
     handleSendToKitchen,
   } = useOrders();
   const db = getFirestore(firebaseApp);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentAction, setCurrentAction] = useState(null);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [message, setMessage] = useState("");
 
   function getStatusClass(status) {
     switch (status) {
@@ -40,6 +41,26 @@ export default function Orders() {
     }
   }
 
+  function openModal(action, order_id, msg) {
+    setCurrentAction(action);
+    setCurrentOrderId(order_id);
+    setMessage(msg);
+    setModalOpen(true);
+  }
+
+  function handleModalConfirm() {
+    if (currentAction === "delete") {
+      handleDelete(currentOrderId);
+    } else if (currentAction === "cancel") {
+      handleCancel(currentOrderId);
+    }
+    setModalOpen(false);
+  }
+
+  function handleModalCancel() {
+    setModalOpen(false);
+  }
+
   return (
     <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
@@ -54,6 +75,9 @@ export default function Orders() {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Customer
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Room Number
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Food Item
@@ -80,6 +104,9 @@ export default function Orders() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {order.customerName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {order.roomNumber}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {order.food}
@@ -113,7 +140,7 @@ export default function Orders() {
                         />
                       </button>
                       <button
-                        onClick={() => handleCancel(order.order_id)}
+                        onClick={() => openModal("cancel", order.order_id, "Are you sure you want to cancel this order?")}
                         className="p-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                         title="Cancel Order"
                       >
@@ -123,7 +150,7 @@ export default function Orders() {
                         />
                       </button>
                       <button
-                        onClick={() => handleDelete(order.order_id)}
+                        onClick={() => openModal("delete", order.order_id, "Are you sure you want to delete this order?")}
                         className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         title="Delete Order"
                       >
@@ -157,7 +184,7 @@ export default function Orders() {
                         />
                       </button>
                       <button
-                        onClick={() => handleDelete(order.order_id)}
+                        onClick={() => openModal("delete", order.order_id, "Are you sure you want to delete this order?")}
                         className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         title="Delete Order"
                       >
@@ -171,7 +198,7 @@ export default function Orders() {
                   {order.status === "Preparing" && (
                     <>
                       <button
-                        onClick={() => handleCancel(order.order_id)}
+                        onClick={() => openModal("cancel", order.order_id, "Are you sure you want to cancel this order?")}
                         className="p-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                         title="Cancel Order"
                       >
@@ -181,7 +208,7 @@ export default function Orders() {
                         />
                       </button>
                       <button
-                        onClick={() => handleDelete(order.order_id)}
+                        onClick={() => openModal("delete", order.order_id, "Are you sure you want to delete this order?")}
                         className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         title="Delete Order"
                       >
@@ -194,7 +221,17 @@ export default function Orders() {
                   )}
                   {order.status === "Delivered" && (
                     <button
-                      onClick={() => handleDelete(order.order_id)}
+                      onClick={() => openModal("delete", order.order_id, "Are you sure you want to delete this order?")}
+                      className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      title="Delete Order"
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="text-white" />
+                    </button>
+                  )}
+
+                  {order.status === "Canceled" && (
+                    <button
+                      onClick={() => openModal("delete", order.order_id, "Are you sure you want to delete this order?")}
                       className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                       title="Delete Order"
                     >
@@ -207,6 +244,14 @@ export default function Orders() {
           </tbody>
         </table>
       </div>
+
+      {/* Render the ConfirmationModal */}
+      <ConfirmationModal
+        isOpen={modalOpen}
+        onConfirm={handleModalConfirm}
+        onCancel={handleModalCancel}
+        message={message}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getFirestore, collection, query, onSnapshot, doc, updateDoc, where, getDocs ,deleteDoc} from "firebase/firestore";
+import { getFirestore, collection, query, onSnapshot, doc, updateDoc, where, getDocs ,deleteDoc,orderBy} from "firebase/firestore";
 import { firebaseApp } from "../firebase_connected/firebase"; // Ensure you have firebase configured
 
 export default function useOrders() {
@@ -9,7 +9,7 @@ export default function useOrders() {
 
   useEffect(() => {
     const ordersCollection = collection(db, "orders");
-    const q = query(ordersCollection);
+    const q = query(ordersCollection, orderBy("timestamp", "desc")); // Sort by creation date in descending order
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newOrders = [];

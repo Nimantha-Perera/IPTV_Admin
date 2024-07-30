@@ -11,7 +11,6 @@ import Messages from "@/app/components/Messages";
 import useOrders from "@/app/hooks/oders_hook";
 import Foods from "@/app/components/Foods";
 
-
 export default function Dashboard() {
   const { user, loading, error } = useAuth();
   const { orders, newOrdersCount, resetNewOrdersCount } = useOrders();
@@ -23,6 +22,30 @@ export default function Dashboard() {
       window.location.href = '/'; // Redirect if not authenticated
     }
   }, [user, loading]);
+
+  useEffect(() => {
+    if (newOrdersCount > 0) {
+      notifyNewOrder(newOrdersCount);
+    }
+  }, [newOrdersCount]);
+
+  const notifyNewOrder = (count) => {
+    if (Notification.permission === "granted") {
+      new Notification("New Order Alert", {
+        body: `You have ${count} new order(s).`,
+        icon: "/path/to/your/icon.png",
+      });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          new Notification("New Order Alert", {
+            body: `You have ${count} new order(s).`,
+            icon: "/path/to/your/icon.png",
+          });
+        }
+      });
+    }
+  };
 
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
