@@ -1,63 +1,204 @@
-import React from 'react';
-import { getFirestore, doc, updateDoc } from "firebase/firestore";
+import React from "react";
+import { getFirestore } from "firebase/firestore";
 import { firebaseApp } from "../firebase_connected/firebase"; // Ensure you have firebase configured
 import useOrders from "../hooks/oders_hook"; // Ensure you have the custom hook
+// import { FaTrash, FaTimes, FaKitchenSet, FaCheckCircle } from 'react-icons/fa'; // Import Font Awesome icons
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faTrash,
+  faTimes,
+  faKitchenSet,
+  faUtensils,
+  faClock,
+  faTimesCircle,
+  
+  faCheckCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function Orders() {
-  const { orders, handleConfirm } = useOrders();
+  const {
+    orders,
+    handleConfirm,
+    handleCancel,
+    handleDelete,
+    handleSendToKitchen,
+  } = useOrders();
   const db = getFirestore(firebaseApp);
 
   function getStatusClass(status) {
     switch (status) {
-      case 'Pending':
-        return 'bg-yellow-200 text-yellow-800';
-      case 'Delivered':
-        return 'bg-green-200 text-green-800';
-      case 'Preparing':
-        return 'bg-blue-200 text-blue-800';
-      case 'Confirmed':
-        return 'bg-purple-200 text-purple-800';
+      case "Pending":
+        return "bg-yellow-200 text-yellow-800";
+      case "Delivered":
+        return "bg-green-200 text-green-800";
+      case "Preparing":
+        return "bg-blue-200 text-blue-800";
+      case "Confirmed":
+        return "bg-purple-200 text-purple-800";
       default:
-        return 'bg-gray-200 text-gray-800';
+        return "bg-gray-200 text-gray-800";
     }
   }
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Food Orders</h1>
+    <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
+        Food Orders
+      </h1>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
+        <table className="min-w-full bg-white divide-y divide-gray-200">
           <thead>
             <tr>
-              <th className="px-4 py-2 border">Order ID</th>
-              <th className="px-4 py-2 border">Customer</th>
-              <th className="px-4 py-2 border">Food Item</th>
-              <th className="px-4 py-2 border">Quantity</th>
-              <th className="px-4 py-2 border">Total Price (LKR)</th>
-              <th className="px-4 py-2 border">Status</th>
-              <th className="px-4 py-2 border">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Order ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Customer
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Food Item
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Quantity
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total Price (LKR)
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {orders.map((order) => (
               <tr key={order.id}>
-                <td className="px-4 py-2 border">{order.order_id}</td>
-                <td className="px-4 py-2 border">{order.customerName}</td>
-                <td className="px-4 py-2 border">{order.food}</td>
-                <td className="px-4 py-2 border">{order.quantity}</td>
-                <td className='px-4 py-2 border'>{order.totalPrice}</td>
-                <td className="px-4 py-2 border">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(order.status)}`}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {order.order_id}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {order.customerName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {order.food}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {order.quantity}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {order.totalPrice}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span
+                    className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${getStatusClass(
+                      order.status
+                    )}`}
+                  >
                     {order.status}
                   </span>
                 </td>
-                <td className="px-4 py-2 border text-center">
-                  {order.status === 'Pending' && (
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex space-x-2">
+                  {order.status === "Pending" && (
+                    <>
+                      <button
+                        onClick={() => handleConfirm(order.order_id)}
+                        className="p-2 bg-blue-500 text-white rounded-md shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        title="Confirm Order"
+                      >
+                        <FontAwesomeIcon
+                          icon={faCheckCircle}
+                          className="text-white"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleCancel(order.order_id)}
+                        className="p-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        title="Cancel Order"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTimesCircle}
+                          className="text-white"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(order.order_id)}
+                        className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        title="Delete Order"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          className="text-white"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleSendToKitchen(order.order_id)}
+                        className="p-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                        title="Send to Kitchen"
+                      >
+                        <FontAwesomeIcon
+                          icon={faUtensils}
+                          className="text-white"
+                        />
+                      </button>
+                    </>
+                  )}
+                  {order.status === "Confirmed" && (
+                    <>
+                      <button
+                        onClick={() => handleSendToKitchen(order.order_id)}
+                        className="p-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                        title="Send to Kitchen"
+                      >
+                        <FontAwesomeIcon
+                          icon={faUtensils}
+                          className="text-white"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(order.order_id)}
+                        className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        title="Delete Order"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          className="text-white"
+                        />
+                      </button>
+                    </>
+                  )}
+                  {order.status === "Preparing" && (
+                    <>
+                      <button
+                        onClick={() => handleCancel(order.order_id)}
+                        className="p-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        title="Cancel Order"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTimesCircle}
+                          className="text-white"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(order.order_id)}
+                        className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        title="Delete Order"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          className="text-white"
+                        />
+                      </button>
+                    </>
+                  )}
+                  {order.status === "Delivered" && (
                     <button
-                      onClick={() => handleConfirm(order.id)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      onClick={() => handleDelete(order.order_id)}
+                      className="p-2 bg-gray-500 text-white rounded-md shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      title="Delete Order"
                     >
-                      Confirm
+                      <FontAwesomeIcon icon={faTrash} className="text-white" />
                     </button>
                   )}
                 </td>
