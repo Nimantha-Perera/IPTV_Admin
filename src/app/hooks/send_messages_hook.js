@@ -1,29 +1,32 @@
-// hooks/useSendAdminMessage.js
 import { useCallback } from 'react';
-import { firestore } from '../firebase_connected/firebase'; // Adjust the path as needed
-
-
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc,setDoc } from 'firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore'; // Import serverTimestamp
 
 const useSendAdminMessage = (chatId, adminUid) => {
   const sendAdminMessage = useCallback(async (message) => {
+    console.log('Sending message:', message);
+    console.log('Chat ID:', chatId);
+    console.log('Admin UID:', adminUid);
+
     if (message.trim() !== '') {
       const messageData = {
         text: message,
         isUserMessage: false,
         isBotResponse: false,
         isAdminResponse: true,
-        timestamp: firestore.FieldValue.serverTimestamp(), // Use Firestore server timestamp
+        timestamp: serverTimestamp(), // Use Firestore server timestamp
         senderId: adminUid, // Use actual admin UID
       };
-
+      const db = getFirestore();
       try {
-        await firestore.collection('chats')
-          .doc(chatId)
-          .collection('messages')
-          .add(messageData);
-      } catch (error) {
-        console.error('Error sending message:', error);
+        const messageCollection = collection(db, 'chats', chatId, 'messages');
+        const newMessageDoc = await addDoc(messageCollection, messageData);
+        console.log('Message added with ID:', newMessageDoc.id);
+      } catch (err) {
+        console.error('Error adding message:', err);
       }
+
+      
     }
   }, [chatId, adminUid]);
 
