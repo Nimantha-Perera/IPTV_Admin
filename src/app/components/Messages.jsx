@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import useFetchMessages from '../hooks/useFetchMessages'; // Adjust the path as needed
+import { useFetchMessages, deleteChat } from '../hooks/useFetchMessages'; // Adjust the path as needed
 import useSendAdminMessage from '../hooks/send_messages_hook'; // Adjust the path as needed
 import ChatsUI from '../components/ChatsUI/ChatsUI'; // Adjust the path as needed
+
 
 export default function Messages() {
   const { chats, loading, error } = useFetchMessages();
@@ -17,6 +18,11 @@ export default function Messages() {
 
   const handleReplyChange = (e) => {
     setReply(e.target.value);
+  };
+
+
+  const handleDeleteChat = async () => {
+    await deleteChat(chatId);
   };
 
   const handleSendReply = async () => {
@@ -58,12 +64,21 @@ export default function Messages() {
                 <td className="px-6 py-4 text-sm text-gray-900">{chat.participants.join(', ')}</td>
                 <td className="px-6 py-4 text-sm text-gray-900">{chat.messages.length}</td>
                 <td className="px-6 py-4 text-sm text-gray-900 text-center">
-                  <button
+                  {/* <button
                     onClick={(e) => e.stopPropagation()}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     View
+                  </button> */}
+
+                  <button
+                    onClick={handleDeleteChat}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  >
+                    Delete
                   </button>
+
+
                 </td>
               </tr>
             ))}

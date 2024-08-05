@@ -63,4 +63,13 @@ const useFetchMessages = (chatId) => {
   return { chats, loading, error };
 };
 
-export default useFetchMessages;
+const deleteChat = async (chatId) => {
+  try {
+    const chatDocRef = doc(firestore, 'chats', chatId);
+    await deleteDoc(chatDocRef);
+    console.log('Chat deleted successfully');
+  } catch (error) {
+    console.error('Error deleting chat:', error);
+  }
+};
+export { useFetchMessages, deleteChat };

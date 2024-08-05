@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import useFetchMessages from '../../hooks/useFetchMessages'; // Adjust the path as needed
 
 export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
   const { chats, loading, error } = useFetchMessages(chatId);
   const messagesEndRef = useRef(null);
+  const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
     // Scroll to the bottom of the messages container when new messages arrive
@@ -20,6 +21,15 @@ export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
   const sortedMessages = selectedChat.messages
     .filter(message => message.timestamp && message.timestamp.seconds)
     .sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
+
+  const handleSendReply = () => {
+    if (reply.trim() === '') {
+      setValidationError('Reply cannot be empty');
+      return;
+    }
+    setValidationError('');
+    onSendReply();
+  };
 
   return (
     <div className="flex flex-col max-w-6xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
@@ -50,12 +60,18 @@ export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
           <label className="block text-sm font-medium text-gray-700">Reply</label>
           <textarea
             value={reply}
-            onChange={onReplyChange}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            onChange={(e) => {
+              onReplyChange(e);
+              if (e.target.value.trim() !== '') setValidationError('');
+            }}
+            className={`mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${validationError ? 'border-red-500' : ''}`}
             rows="4"
           />
+          {validationError && (
+            <p className="mt-2 text-sm text-red-600">{validationError}</p>
+          )}
           <button
-            onClick={onSendReply}
+            onClick={handleSendReply}
             className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Send Reply
