@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import useFetchMessages from '../../hooks/useFetchMessages'; // Adjust the path as needed
+import { useFetchMessages } from '../../hooks/useFetchMessages'; // Adjust the path as needed
 
 export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
   const { chats, loading, error } = useFetchMessages(chatId);
