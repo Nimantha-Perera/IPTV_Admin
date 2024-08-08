@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFetchMessages, deleteChat } from '../hooks/useFetchMessages'; // Adjust the path as needed
+import { useFetchMessages, deleteChat } from '../hooks/fetch messages/useFetchMessages'; // Adjust the path as needed
 import useSendAdminMessage from '../hooks/send_messages_hook'; // Adjust the path as needed
 import ChatsUI from '../components/ChatsUI/ChatsUI'; // Adjust the path as needed
 

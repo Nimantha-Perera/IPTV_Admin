@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useFetchMessages } from '../../hooks/useFetchMessages'; // Adjust the path as needed
+import { useFetchMessages } from '../../hooks/fetch messages/useFetchMessages'; // Adjust the path as needed
 
 export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
-  const { chats, loading, error } = useFetchMessages(chatId);
+  const { chats, loading, error } = useFetchMessages(chatId); // Ensure chatId is correctly passed
   const messagesEndRef = useRef(null);
   const [validationError, setValidationError] = useState('');
 
@@ -17,10 +17,16 @@ export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
 
   const selectedChat = chats[0];
 
+  // Debug: Check if selectedChat and messages are being fetched
+  console.log('Selected chat:', selectedChat);
+
   // Sort messages by timestamp
   const sortedMessages = selectedChat.messages
     .filter(message => message.timestamp && message.timestamp.seconds)
     .sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
+
+  // Debug: Check sorted messages
+  console.log('Sorted messages:', sortedMessages);
 
   const handleSendReply = () => {
     if (reply.trim() === '') {
@@ -38,21 +44,25 @@ export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Chat ID: {chatId}</h2>
         <div className="flex flex-col-reverse space-y-reverse overflow-y-auto max-h-80">
           <div className="space-y-4">
-            {sortedMessages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isUserMessage ? 'justify-start' : 'justify-end'} mb-4`}
-              >
+            {sortedMessages.length === 0 ? (
+              <p>No messages found</p>
+            ) : (
+              sortedMessages.map((message) => (
                 <div
-                  className={`p-4 max-w-xs rounded-lg shadow-sm ${message.isUserMessage ? 'bg-gray-100' : 'bg-blue-100'}`}
+                  key={message.id}
+                  className={`flex ${message.isUserMessage ? 'justify-start' : 'justify-end'} mb-4`}
                 >
-                  <p className="text-sm text-gray-900">{message.text}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(message.timestamp.seconds * 1000).toLocaleString()}
-                  </p>
+                  <div
+                    className={`p-4 max-w-xs rounded-lg shadow-sm ${message.isUserMessage ? 'bg-gray-100' : 'bg-blue-100'}`}
+                  >
+                    <p className="text-sm text-gray-900">{message.text}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(message.timestamp.seconds * 1000).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
             <div ref={messagesEndRef} />
           </div>
         </div>
