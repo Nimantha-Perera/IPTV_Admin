@@ -39,9 +39,9 @@ export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
 
   return (
     <div className="flex flex-col max-w-6xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Chat Details</h1>
-      <div className="flex flex-col bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Chat ID: {chatId}</h2>
+      
+      {/* <div className="flex flex-col bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200 mb-6"> */}
+        <h2 className="text-xl font-semibold text-white mb-4 text-center p-6 bg-cyan-700 shadow-lg rounded-lg">Chat ID: {chatId}</h2>
         <div className="flex flex-col-reverse space-y-reverse overflow-y-auto max-h-80">
           <div className="space-y-4">
             {sortedMessages.length === 0 ? (
@@ -87,7 +87,7 @@ export default function ChatsUI({ chatId, onReplyChange, reply, onSendReply }) {
             Send Reply
           </button>
         </div>
-      </div>
-    </div>
+      {/* </div> */}
+     </div> 
   );
 }
