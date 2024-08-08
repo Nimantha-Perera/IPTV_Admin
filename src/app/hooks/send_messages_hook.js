@@ -1,9 +1,19 @@
 import { useCallback } from 'react';
-import { getFirestore, collection, addDoc, serverTimestamp, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '../firebase_connected/firebase'; // Adjust the path as needed
 
-const useSendAdminMessage = (chatId, adminUid) => {
-  const sendAdminMessage = useCallback(async (message) => {
+const useSendAdminMessage = (defaultChatId, adminUid) => {
+  const sendAdminMessage = useCallback(async (message, chatId = defaultChatId) => {
+    if (!chatId) {
+      console.error('Chat ID is required');
+      return;
+    }
+
+    if (!adminUid) {
+      console.error('Admin UID is required');
+      return;
+    }
+
     if (message.trim() === '') {
       console.error('Message cannot be empty');
       return;
@@ -19,16 +29,18 @@ const useSendAdminMessage = (chatId, adminUid) => {
     };
 
     try {
-      // Reference to the messages subcollection within the specific chat under the specific customer
-      const customerDocRef = doc(firestore, 'customers', 'customerID'); // Adjust 'customerID' as needed
-      const chatsCollectionRef = collection(customerDocRef, 'chats');
-      const newMessageDoc = await addDoc(collection(chatsCollectionRef, chatId, 'messages'), messageData);
+      // Assuming customerId is available in the context or passed to this hook
+      const customerId = 'someCustomerId'; // Replace with actual logic to get customerId
+
+      // Path to messages collection
+      const messagesCollectionRef = collection(firestore, 'customers',defaultChatId, 'chats', chatId, 'messages');
+      const newMessageDoc = await addDoc(messagesCollectionRef, messageData);
 
       console.log('Message added with ID:', newMessageDoc.id);
     } catch (err) {
       console.error('Error adding message:', err);
     }
-  }, [chatId, adminUid]);
+  }, [defaultChatId, adminUid]);
 
   return sendAdminMessage;
 };

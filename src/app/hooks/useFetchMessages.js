@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, doc, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
 import { firestore } from '../firebase_connected/firebase'; // Adjust the path as needed
 
-const useFetchMessages = (customerID) => {
+const useFetchMessages = (chatID = null) => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,34 +14,37 @@ const useFetchMessages = (customerID) => {
       try {
         setLoading(true);
 
-        if (customerID) {
-          // Fetch chats for a specific customer
-          const customerDocRef = doc(firestore, 'customers', customerID);
-          const chatsCollectionRef = collection(customerDocRef, 'chats');
-          const chatsQuery = query(chatsCollectionRef);
+        if (chatID) {
+          // Fetch messages for a specific chatID
+          const chatDocRef = doc(firestore, 'chats', chatID);
+          const messagesCollectionRef = collection(chatDocRef, 'messages');
 
-          // Set up a real-time listener for chat documents
-          unsubscribe = onSnapshot(chatsQuery, async (chatsSnapshot) => {
+          // Set up a real-time listener for messages documents
+          unsubscribe = onSnapshot(messagesCollectionRef, (messagesSnapshot) => {
+            const messages = messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setChats([{ chatId: chatID, messages }]);
+            setLoading(false);
+          });
+        } else {
+          // Fetch all chats
+          const chatsCollectionRef = collection(firestore, 'chats');
+          unsubscribe = onSnapshot(chatsCollectionRef, (chatsSnapshot) => {
             const chatPromises = chatsSnapshot.docs.map(async (chatDoc) => {
               const messagesCollectionRef = collection(chatDoc.ref, 'messages');
-              const messagesQuery = query(messagesCollectionRef);
 
               return new Promise((resolve, reject) => {
-                onSnapshot(messagesQuery, (messagesSnapshot) => {
+                onSnapshot(messagesCollectionRef, (messagesSnapshot) => {
                   const messages = messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                   resolve({ chatId: chatDoc.id, messages });
                 }, reject);
               });
             });
 
-            const allChats = await Promise.all(chatPromises);
-            setChats(allChats);
-            setLoading(false);
+            Promise.all(chatPromises).then((allChats) => {
+              setChats(allChats);
+              setLoading(false);
+            });
           });
-        } else {
-          // Handle case where customerID is not provided
-          setChats([]);
-          setLoading(false);
         }
       } catch (e) {
         console.error('Error fetching chats:', e);
@@ -54,14 +57,14 @@ const useFetchMessages = (customerID) => {
 
     // Cleanup listener on unmount
     return () => unsubscribe && unsubscribe();
-  }, [customerID]);
+  }, [chatID]);
 
   return { chats, loading, error };
 };
 
-const deleteChat = async (chatId) => {
+const deleteChat = async (chatID) => {
   try {
-    const chatDocRef = doc(firestore, 'chats', chatId);
+    const chatDocRef = doc(firestore, 'chats', chatID);
     await deleteDoc(chatDocRef);
     console.log('Chat deleted successfully');
   } catch (error) {
