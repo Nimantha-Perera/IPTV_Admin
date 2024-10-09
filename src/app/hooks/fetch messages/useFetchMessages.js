@@ -9,6 +9,7 @@ const useFetchMessages = (customerId = null) => {
 
   useEffect(() => {
     let unsubscribe;
+    let lastFetch = Date.now();
 
     const fetchChats = async () => {
       try {
@@ -23,6 +24,15 @@ const useFetchMessages = (customerId = null) => {
             const messages = messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setChats([{ chatId: customerId, messages }]);
             setLoading(false);
+            
+            // Notify user about new messages
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage && lastMessage.timestamp > lastFetch) {
+              lastFetch = lastMessage.timestamp;
+              if (Notification.permission === "granted") {
+                new Notification("New Message", { body: lastMessage.text });
+              }
+            }
           }, (error) => {
             console.error('Error fetching messages:', error);
             setError(error);
@@ -41,6 +51,15 @@ const useFetchMessages = (customerId = null) => {
                 onSnapshot(messagesQuery, (messagesSnapshot) => {
                   const messages = messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                   resolve({ chatId: chatDoc.id, messages });
+                  
+                  // Notify user about new messages
+                  const lastMessage = messages[messages.length - 1];
+                  if (lastMessage && lastMessage.timestamp > lastFetch) {
+                    lastFetch = lastMessage.timestamp;
+                    if (Notification.permission === "granted") {
+                      new Notification("New Message", { body: lastMessage.text });
+                    }
+                  }
                 }, reject);
               });
             });
@@ -67,12 +86,23 @@ const useFetchMessages = (customerId = null) => {
       }
     };
 
+    // Request notification permission
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
     fetchChats();
+
+    // Poll for new messages every 30 seconds
+    const intervalId = setInterval(() => {
+      fetchChats();
+    }, 30000);
 
     return () => {
       if (unsubscribe) {
         unsubscribe();
       }
+      clearInterval(intervalId);
     };
   }, [customerId]);
 
